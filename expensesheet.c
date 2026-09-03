@@ -124,14 +124,29 @@ void fixid(int *e){
     
 }
 
+void edit_name(char *e, char *new_name){
+    
+    
+    strcpy(e, new_name);
+}
+
+void edit_cat(char *e, char *x ){
+   strcpy(e, x);
+}
+
+void edit_cost(int *cost, int new_cost){
+    
+    *cost = new_cost;
+}
+
 int main(void)
 {
     FILE *fptr;
-    FILE *fptr_load = fopen("storage.txt", "rb");
+    FILE *fptr_load = fopen("storage.dat", "rb");
 
     exp e[100];
 
-    int count = 0;
+    int count;
     if(fptr_load != NULL){
         count = fread(e, sizeof(exp), 100, fptr_load);
         fclose(fptr_load);
@@ -142,6 +157,9 @@ int main(void)
     if(count != 0){
         printf("Data loaded successfully\n");
     }
+    else{
+        count = 0;
+    }
     
 
     int choice;
@@ -149,6 +167,10 @@ int main(void)
     int choose_id;
 
     int count_proof;
+
+    int edit_on;
+
+
 
     do
     {
@@ -159,18 +181,23 @@ int main(void)
         printf("3. View all your expenses.\n");
         printf("4. Calculate total cost.\n");
         printf("5. Search an expense.\n");
-        printf("6. Delete an expense.\n");
-        printf("7. Save and exit.\n");
+        printf("6. Edit an expense.\n");
+        printf("7. Delete an expense.\n");
+        printf("8. Summarize all expenses.\n");
+        printf("9. Save and exit.\n");
         printf("Enter your choice by entering the number: ");
         scanf("%d", &choice);
         printf("\n");
 
-        while (choice < 1 || choice > 7)
+        while (choice < 1 || choice > 9)
         {
             printf("Choose a correct option: ");
             scanf("%d", &choice);
             printf("\n");
         }
+
+        char cat_arr[75][50];
+        int uniqueid = 0;
 
         switch (choice)
         {
@@ -376,6 +403,104 @@ int main(void)
 
             break;
         case(6):
+            if (count < 1)
+            {
+                printf("Add an expense item first.\n");
+                break;
+            }
+
+            printf("Choose an ID from the following:\n");
+            for(int a = 0; a < count; a++){
+                printf("ID.%d\n", e[a].id);
+            }
+
+            printf("Enter ID: ");
+            scanf("%d", &edit_on);\
+            printf("\n");
+
+            while(edit_on < 1 || edit_on > count){
+                printf("Enter a valid ID: ");
+                scanf("%d", &edit_on);
+                printf("\n");
+            }
+            printf("How would you like to edit this expense:\n");
+            printf("1. Edit its Name\n");
+            printf("2. Edit its Category\n");
+            printf("3. Edit its Cost\n");
+            printf("4. Edit the entre expense\n");
+
+            int edit_choice;
+            printf("Enter your choice by entering the number: ");
+            scanf("%d", &edit_choice);
+            printf("\n");
+            while (edit_choice < 1 || edit_choice > 4)
+            {
+                printf("Please select a valid option: ");
+                scanf("%d", &edit_choice);
+                printf("\n");
+            }
+            char cat_arr[75][50];
+            char s_cat2[50];
+            char new_cat[50];
+            char new_name[50];
+            int new_cost;
+
+            switch(edit_choice){
+                case(1):
+                    printf("Enter new name: ");
+                    while(getchar() != '\n');
+                    fgets(new_name, 50, stdin);
+                    new_name[strcspn(new_name, "\n")] = '\0';
+                    printf("\n");
+
+                    edit_name(e[edit_on - 1].name, new_name);
+                    break;
+                case(2):
+                    printf("Enter your new category name: ");
+                    while(getchar() != '\n');
+                    fgets(new_cat, 50, stdin);
+                    new_cat[strcspn(new_cat, "\n")] = '\0';
+                    printf("\n");
+
+                    edit_cat(e[edit_on - 1].category, new_cat);
+                    break;
+                
+                case(3):
+                    printf("Enter new cost: ");
+                    scanf("%d", &new_cost);
+                    printf("\n");
+
+                    edit_cost(&e[edit_on - 1].cost, new_cost);
+                    break;
+                case(4):
+                    printf("Enter new name: ");
+                    while(getchar() != '\n');
+                    fgets(new_name, 50, stdin);
+                    new_name[strcspn(new_name, "\n")] = '\0';
+                    printf("\n");
+
+                    edit_name(e[edit_on - 1].name, new_name); 
+
+                    printf("Enter your new category name: ");
+                    fgets(new_cat, 50, stdin);
+                    new_cat[strcspn(new_cat, "\n")] = '\0';
+                    printf("\n");
+
+                    edit_cat(e[edit_on - 1].category, new_cat);
+
+                    printf("Enter new cost: ");
+                    scanf("%d", &new_cost);
+                    printf("\n");
+
+                    edit_cost(&e[edit_on - 1].cost, new_cost);
+
+                    break;
+
+            }
+            break;
+
+            
+        case(7):
             printf("Enter a name from the followig:\n");
             for(int a = 0; a < count; a++){
                 printf("%d. %s\n", a + 1, e[a].name);
@@ -395,9 +520,42 @@ int main(void)
                 fixid(&e[a].id);
             }
             break;
-            
-        case (7):
-            fptr = fopen("storage.txt", "wb");
+
+        case(8):
+            if (count < 1)
+            {
+                printf("Add an expense item first.\n");
+                break;
+            }
+            printf("The summarization of all the expenses is shown below:\n");
+            printf("\n");
+            printf("Total nubner of expenses: %d\n", count);
+            totalcost(e, count);
+            printf("All the names of the expenses are:\n");
+            for(int a = 0; a < count; a++){
+                printf("%d. %s\n", a + 1, e[a].name);
+            }
+            printf("All the categories of the expenses are:\n");
+            for(int i = 0; i < count; i++){
+                int exists = 0;
+                for(int z = 0; z < uniqueid; z++){
+                    if(strcmp(e[i].category, cat_arr[z]) == 0){
+                        exists = 1;
+                        break;
+                    }
+                }
+                if(exists == 0){
+                    strcpy(cat_arr[uniqueid], e[i].category);
+                    uniqueid++;
+                }
+            }
+            for(int b = 0; b < uniqueid; b++){
+                printf("%d. %s\n", b + 1, cat_arr[b]);
+            }
+            break;
+
+        case (9):
+            fptr = fopen("storage.dat", "wb");
             if(fptr == NULL){
                 printf("File couldn't be accessed.");
                 fclose(fptr);
@@ -417,7 +575,7 @@ int main(void)
             break;
         }
 
-    } while (choice != 7);
+    } while (choice != 9);
 
     return 0;
 }
